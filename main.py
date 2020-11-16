@@ -2,6 +2,14 @@ import math
 from functools import reduce
 import random
 
+file1 = open("input.txt","r") 
+input_file = file1.read()
+lines = input_file.split("\n")
+khoA = list(map(int, lines[0].split(" ")))
+
+N = int(lines[1].split(" ")[0])
+M = int(lines[1].split(" ")[1])
+
 def khoang_cach_giua_2_diem(diem1, diem2):
   return math.sqrt((diem2[0]- diem1[0])**2 + (diem2[1] - diem1[1])**2)
 
@@ -12,21 +20,21 @@ def print_order_list(order_list):
   print()
 
 class Order:
-  def __init__(self, id, toado, thetich, trongluong, id_nhanvien):
+  def __init__(self, id, toado, thetich, trongluong):
     self.id = id
     self.toado = toado
     self.thetich = thetich
     self.trongluong = trongluong
-    self.id_nhanvien = id_nhanvien
-
-  def gan_nhanvien(self, id_nhanvien):
-    self.id_nhanvien = id_nhanvien
   
   def to_tuple(self):
-    return self.toado[0], self.toado[1], self.thetich, self.trongluong, self.id_nhanvien
+    return self.toado[0], self.toado[1], self.thetich, self.trongluong
+
+class NhanVien:
+  def __init__(self, lstOrder):
+    self.lstOrder = lstOrder
 
 
-def ham_luong_gia(lstOrder, khoA): 
+def loi_nhuan(lstOrder): 
   quangduong = khoang_cach_giua_2_diem(lstOrder[0].toado, khoA)
   # quangduong = reduce(lambda acc, ele: khoang_cach_giua_2_diem(acc.toado,ele.toado), lstOrder)
   doanhthu = 0
@@ -40,11 +48,22 @@ def ham_luong_gia(lstOrder, khoA):
   loinhuan = doanhthu - chiphi
   return loinhuan
 
-def initialize_state(order_list, number_nhanvien):
+
+def ham_luong_gia(lstNhanVien):
+  # trixma(trixma(f(i)-f(j)))
+  luonggia = 0
+  for i in range (len(lstNhanVien)):
+    for j in range (len(lstNhanVien)):
+      luonggia += abs(loi_nhuan(lstNhanVien[i].lstOrder) - loi_nhuan(lstNhanVien[j].lstOrder))
+  return luonggia
+
+
+def initialize_state(order_list, nhanvien_list):
   for i in range (len(order_list)):
     order_list[i].gan_nhanvien(random.randrange(number_nhanvien))
     
-def print_result(order_list, number_nhanvien):
+
+def write_result(order_list, number_nhanvien):
   f = open("output.txt",'w')
   # sort theo id_nhanvien => in xong nhan vien dau thi \n
   order_list.sort(key = lambda x: x.id_nhanvien)
@@ -60,15 +79,8 @@ def print_result(order_list, number_nhanvien):
       f.write('\n')
       current_nhanvien += 1
 
-def main():
-  file1 = open("input.txt","r") 
-  input_file = file1.read()
-  lines = input_file.split("\n")
-  khoA = list(map(int, lines[0].split(" ")))
-  print(khoA)
 
-  N = int(lines[1].split(" ")[0])
-  M = int(lines[1].split(" ")[1])
+def main():
 
   order_list = []
   for i in range (2,N+2):
@@ -76,15 +88,16 @@ def main():
     toado = [int(lines[i].split(" ")[0]), int(lines[i].split(" ")[1])]
     thetich = int(lines[i].split(" ")[2])
     trongluong = int(lines[i].split(" ")[3])
-    order = Order(id, toado, thetich, trongluong, 0)
+    order = Order(id, toado, thetich, trongluong)
     order_list.append(order)
   
-  initialize_state(order_list, M)
+  # initialize_state(order_list, M)
   
   print_order_list(order_list)
-  print("\nLợi nhuận = ", ham_luong_gia(order_list, khoA))
-  print_result(order_list, M)
-  print("\nLợi nhuận = ", ham_luong_gia(order_list, khoA))
+  print("\nLợi nhuận = ", loi_nhuan(order_list, khoA))
+  # write_result(order_list, M)
+  # print("\nLợi nhuận = ", loi_nhuan(order_list, khoA))
 
 
-main()
+if __name__ == "__main__":
+    main()
