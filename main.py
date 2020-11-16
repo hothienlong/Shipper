@@ -2,6 +2,15 @@ import math
 from functools import reduce
 import random
 
+file1 = open("input.txt","r") 
+input_file = file1.read()
+lines = input_file.split("\n")
+khoA = list(map(int, lines[0].split(" ")))
+print(khoA)
+
+N = int(lines[1].split(" ")[0])
+M = int(lines[1].split(" ")[1])
+
 def khoang_cach_giua_2_diem(diem1, diem2):
   return math.sqrt((diem2[0]- diem1[0])**2 + (diem2[1] - diem1[1])**2)
 
@@ -26,7 +35,7 @@ class Order:
     return self.toado[0], self.toado[1], self.thetich, self.trongluong, self.id_nhanvien
 
 
-def ham_luong_gia(lstOrder, khoA): 
+def loi_nhuan(lstOrder): 
   quangduong = khoang_cach_giua_2_diem(lstOrder[0].toado, khoA)
   # quangduong = reduce(lambda acc, ele: khoang_cach_giua_2_diem(acc.toado,ele.toado), lstOrder)
   doanhthu = 0
@@ -39,7 +48,27 @@ def ham_luong_gia(lstOrder, khoA):
   chiphi = quangduong / 40 * 20 + 10
   loinhuan = doanhthu - chiphi
   return loinhuan
+  
 
+def ham_luong_gia(lstOrder):
+  lstNhanVien = {}
+  for i in range (len(lstOrder)):
+    current_nhanvien = lstOrder[i].id_nhanvien
+    try:
+      lstNhanVien[current_nhanvien] += [lstOrder[i]]
+      print("add")
+    except:
+      lstNhanVien[current_nhanvien] = [lstOrder[i]]
+      print("new")
+
+  luonggia = 0
+  for i in lstNhanVien:
+    for j in lstNhanVien:
+      # trixma(trixma(abs(f(i) - f(j))))
+      luonggia += abs(loi_nhuan(lstNhanVien[i]) - loi_nhuan(lstNhanVien[j]))
+  return luonggia
+
+   
 def initialize_state(order_list, number_nhanvien):
   for i in range (len(order_list)):
     order_list[i].gan_nhanvien(random.randrange(number_nhanvien))
@@ -61,15 +90,6 @@ def print_result(order_list, number_nhanvien):
       current_nhanvien += 1
 
 def main():
-  file1 = open("input.txt","r") 
-  input_file = file1.read()
-  lines = input_file.split("\n")
-  khoA = list(map(int, lines[0].split(" ")))
-  print(khoA)
-
-  N = int(lines[1].split(" ")[0])
-  M = int(lines[1].split(" ")[1])
-
   order_list = []
   for i in range (2,N+2):
     id = i - 2
@@ -82,9 +102,9 @@ def main():
   initialize_state(order_list, M)
   
   print_order_list(order_list)
-  print("\nLợi nhuận = ", ham_luong_gia(order_list, khoA))
-  print_result(order_list, M)
-  print("\nLợi nhuận = ", ham_luong_gia(order_list, khoA))
-
+  print("\nLợi nhuận = ", loi_nhuan(order_list))
+  # print_result(order_list, M)
+  # print("\nLợi nhuận = ", loi_nhuan(order_list))
+  print("Lượng giá = ", ham_luong_gia(order_list))
 
 main()
