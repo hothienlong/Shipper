@@ -61,10 +61,20 @@ def ham_luong_gia(lstOrder):
       lstNhanVien[current_nhanvien] = [lstOrder[i]]
       
   luonggia = 0
+  # for i in lstNhanVien:
+  #   for j in lstNhanVien:
+  #     # trixma(trixma(abs(f(i) - f(j))))
+  #     luonggia += abs(loi_nhuan(lstNhanVien[i]) - loi_nhuan(lstNhanVien[j]))
+  max_loi_nhuan = -math.inf
+  min_loi_nhuan = math.inf
   for i in lstNhanVien:
-    for j in lstNhanVien:
-      # trixma(trixma(abs(f(i) - f(j))))
-      luonggia += abs(loi_nhuan(lstNhanVien[i]) - loi_nhuan(lstNhanVien[j]))
+    current_loi_nhuan = loi_nhuan(lstNhanVien[i])
+    if(max_loi_nhuan < current_loi_nhuan):
+      max_loi_nhuan = current_loi_nhuan
+    if(min_loi_nhuan > current_loi_nhuan):
+      min_loi_nhuan = current_loi_nhuan
+  luonggia = max_loi_nhuan - min_loi_nhuan
+
   return luonggia
 
 
@@ -81,21 +91,36 @@ def initialize_state(order_list, number_nhanvien):
     order_list[i].gan_nhanvien(random.randrange(number_nhanvien))
     
 
+# def write_result(order_list):
+#   f = open("output.txt",'w')
+#   # sort theo id_nhanvien => in xong nhan vien dau thi \n
+#   order_list.sort(key = lambda x: x.id_nhanvien)
+#   print_order_list(order_list)
+
+#   current_nhanvien = order_list[0].id_nhanvien
+#   current_order = 0
+#   while(current_order < len(order_list)):
+#     if(order_list[current_order].id_nhanvien == current_nhanvien):
+#       f.write(str(order_list[current_order].id) + " ")
+#       current_order += 1
+#     else:
+#       f.write('\n')
+#       current_nhanvien += 1
+
 def write_result(order_list):
   f = open("output.txt",'w')
-  # sort theo id_nhanvien => in xong nhan vien dau thi \n
-  order_list.sort(key = lambda x: x.id_nhanvien)
-  print_order_list(order_list)
-
-  current_nhanvien = order_list[0].id_nhanvien
-  current_order = 0
-  while(current_order < len(order_list)):
-    if(order_list[current_order].id_nhanvien == current_nhanvien):
-      f.write(str(order_list[current_order].id) + " ")
-      current_order += 1
-    else:
-      f.write('\n')
-      current_nhanvien += 1
+  lstNhanVien = {}
+  for i in range (len(order_list)):
+    current_nhanvien = order_list[i].id_nhanvien
+    try:
+      lstNhanVien[current_nhanvien] += [order_list[i]]
+    except:
+      lstNhanVien[current_nhanvien] = [order_list[i]]
+      
+  for i in range (len(lstNhanVien)):
+    for j in range (len(lstNhanVien[i])):
+      f.write(str(lstNhanVien[i][j].id) + " ")
+    f.write('\n')
 
 
 def checkTotal(lstOrder, M):
@@ -125,6 +150,7 @@ def generate_neighbours(lstOrder, M):
         if checkTotal(neighbour, M) == True:
           neighbours.append(neighbour)
 
+
   return neighbours
 
 
@@ -136,7 +162,6 @@ def hill_climbing_search(current, M):
     neighbours = []
 
     current_state = ham_luong_gia(current)
-    print("current state = ", current_state)
 
     neighbours = generate_neighbours(current, M)
 
@@ -165,21 +190,26 @@ def main():
     trongluong = int(lines[i].split(" ")[3])
     order = Order(id, toado, thetich, trongluong, 0)
     order_list.append(order)
-  
-  initialize_state(order_list, M)
-  
-  print_order_list(order_list)
-  print("Lượng giá = ", ham_luong_gia(order_list))
-
-  final_state = hill_climbing_search(order_list, M)
-  print("Final List Order is: ")
-  print_order_list(final_state[0])
-  print("Final Min is: ")
-  print(final_state[1])
-  write_result(final_state[0])
-
-
-
+  restarts=0
+  max_restart = int(input("Enter max restart : "))
+  min_state = math.inf
+  final_state = []
+  while True:
+    initialize_state(order_list, M)
+    state = hill_climbing_search(order_list, M)
+    if (min_state > state[1]):
+      final_state = state
+      min_state = state[1] 
+    if restarts == max_restart: 
+      print("Final List Order is: ")
+      print_order_list(final_state[0])
+      print("Final Min is: ")
+      print(min_state)
+      write_result(final_state[0])
+      break
+    else:
+      restarts += 1
+      print("wait: ", restarts)
 
 
 if __name__ == "__main__":
