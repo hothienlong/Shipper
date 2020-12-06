@@ -1,16 +1,10 @@
 import math
-from functools import reduce # sử dụng khi param cùng kiểu với return
 import random
 import copy
+import time
 
-file1 = open("input.txt","r") 
-input_file = file1.read()
-lines = input_file.split("\n")
-khoA = list(map(int, lines[0].split(" ")))
-
-
-N = int(lines[1].split(" ")[0])
-M = int(lines[1].split(" ")[1])
+lines= []
+khoA= []
 
 def khoang_cach_giua_2_diem(diem1, diem2):
   return math.sqrt((diem2[0]- diem1[0])**2 + (diem2[1] - diem1[1])**2)
@@ -76,7 +70,21 @@ def ham_luong_gia(lstOrder):
   luonggia = max_loi_nhuan - min_loi_nhuan
 
   return luonggia
-
+def ham_luong_gia_real(lstOrder):
+  lstNhanVien = {}
+  for i in range (len(lstOrder)):
+    current_nhanvien = lstOrder[i].id_nhanvien
+    try:
+      lstNhanVien[current_nhanvien] += [lstOrder[i]]
+    except:
+      lstNhanVien[current_nhanvien] = [lstOrder[i]]
+      
+  luonggia = 0
+  for i in lstNhanVien:
+    for j in lstNhanVien:
+      # trixma(trixma(abs(f(i) - f(j))))
+      luonggia += abs(loi_nhuan(lstNhanVien[i]) - loi_nhuan(lstNhanVien[j]))
+  return luonggia
 
 def initialize_state(order_list, number_nhanvien):
   assigned = []
@@ -106,23 +114,6 @@ def initialize_state(order_list, number_nhanvien):
 #     else:
 #       f.write('\n')
 #       current_nhanvien += 1
-
-def write_result(order_list):
-  f = open("output.txt",'w')
-  lstNhanVien = {}
-  for i in range (len(order_list)):
-    current_nhanvien = order_list[i].id_nhanvien
-    try:
-      lstNhanVien[current_nhanvien] += [order_list[i]]
-    except:
-      lstNhanVien[current_nhanvien] = [order_list[i]]
-      
-  for i in range (len(lstNhanVien)):
-    for j in range (len(lstNhanVien[i])):
-      f.write(str(lstNhanVien[i][j].id) + " ")
-    f.write('\n')
-
-
 def checkTotal(lstOrder, M):
   lstCheck = []
   for i in range(M):
@@ -168,6 +159,7 @@ def hill_climbing_search(current, M):
     for x in neighbours:
       E.append(ham_luong_gia(x))  
 
+    # trường hợp số đơn hàng = số nhân viên sẽ ko có neighbour
     min_value = min(E) if E else current_state
 
     if current_state <= min_value:
@@ -181,7 +173,17 @@ def hill_climbing_search(current, M):
       current = neighbours[neighbour]
 
 
-def main():
+def assign(file_input, file_output):
+  file1 = open(file_input,"r") 
+  input_file = file1.read()
+  lines = input_file.split("\n")
+  
+  global khoA
+  khoA = list(map(int, lines[0].split(" ")))
+  
+  N = int(lines[1].split(" ")[0])
+  M = int(lines[1].split(" ")[1])
+
   order_list = []
   for i in range (2,N+2):
     id = i - 2
@@ -192,6 +194,7 @@ def main():
     order_list.append(order)
   restarts=0
   max_restart = int(input("Enter max restart : "))
+  start = time.time()
   min_state = math.inf
   final_state = []
   while True:
@@ -205,12 +208,29 @@ def main():
       print_order_list(final_state[0])
       print("Final Min is: ")
       print(min_state)
-      write_result(final_state[0])
+      print("Final real Min  is: ")
+      print(ham_luong_gia_real(final_state[0]))
+
+      f = open(file_output,'w')
+      lstNhanVien = {}
+      for i in range (len(final_state[0])):
+        current_nhanvien = (final_state[0])[i].id_nhanvien
+        try:
+          lstNhanVien[current_nhanvien] += [(final_state[0])[i]]
+        except:
+          lstNhanVien[current_nhanvien] = [(final_state[0])[i]]
+      
+      for i in range (len(lstNhanVien)):
+        for j in range (len(lstNhanVien[i])):
+          f.write(str(lstNhanVien[i][j].id) + " ")
+        f.write('\n')
       break
     else:
       restarts += 1
       print("wait: ", restarts)
+  end = time.time()
+  print("Time taken: ", end-start)
 
 
 if __name__ == "__main__":
-    main()
+  assign("input.txt", "output.txt")
