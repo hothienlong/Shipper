@@ -193,7 +193,14 @@ def assign(file_input, file_output):
     order = Order(id, toado, thetich, trongluong, 0)
     order_list.append(order)
   restarts=0
-  max_restart = int(input("Enter max restart : "))
+  if (N <= 20):
+    max_restart = 10
+  elif (N <=50):
+    max_restart = 20
+  elif (N<100):
+    max_restart = 5
+  else :
+    max_restart = 0
   start = time.time()
   min_state = math.inf
   final_state = []
